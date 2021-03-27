@@ -18,17 +18,28 @@ path = 'Datasets/uk_used_cars'
 df = pd.DataFrame()
 for file in os.listdir(path):
     temp = pd.read_csv(os.path.join(path, file), names=columns, header=None, index_col=False, skiprows=1)
-    temp['filename'] = file
+    temp['Brand'] = file.split(".")[0]
     df = df.append(temp)
 
-df.isnull().sum()
 # Checking for null values in the Dataframe
 plt.subplots()
 msno.matrix(df, figsize=(10, 10))
 plt.subplots()
 msno.bar(df, figsize=(12, 8))
 
+# Drop null values
+df.dropna(subset=['Mileage', 'Year'], inplace=True)
+
+# установить формат колонки category для которых это логично.
+categorical=['Model', 'Transmission', 'Fuel type', 'Brand']
+df[categorical]=df[categorical].astype('category')
+numeric=['Price','Mileage','Tax']
+df['Price']=df['Price'].str.replace('£','')
+df['Price']=df['Price'].str.strip()
+df['Price']=df['Price'].str.replace(',','')
+df[numeric]=df[numeric].astype('float')
+
 # TODO: какие вопросы по датасету (год выпуска?), что посмотреть: изменения цен с каждым годом пробега
-# TODO: установить формат колонки category для которых это логично.
+# TODO: engine size проверить как собираются данные, попадают текстовые значения, проверить уникальные значения
 # TODO: гистограмма, bar chart
 # TODO: почему выводится пустой график
