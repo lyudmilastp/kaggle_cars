@@ -81,7 +81,7 @@ linear_regressor = linear_model.LinearRegression()
 linear_regressor.fit(X_train, y_train)
 y_test_pred = linear_regressor.predict(X_test)
 
-plt.scatter(X_test, y_test, color='green', marker = '.', linewidths=1)
+plt.scatter(X_test, y_test, color='red', marker = '.', linewidths=1)
 plt.plot(X_test, y_test_pred, color='black', linewidth=1)
 plt.xticks(())
 plt.yticks(())
