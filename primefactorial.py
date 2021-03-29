@@ -43,6 +43,10 @@ def decomp(n):
         else:
             a += 1
 
+
+    for i in ans:
+        if ans.count(i) == 1:
+
 # Counting the number of divisions of each number
     counts = collections.Counter(ans)
 

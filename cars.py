@@ -53,6 +53,8 @@ numeric=['Price','Mileage','Tax']
 # df['Price']=df['Price'].str.replace(',','')
 df[numeric] = df[numeric].astype('float')
 df[categorical] = df[categorical].astype('category')
+
+
 cor_mat = df.corr()
 sns.heatmap(cor_mat, vmin=-1, vmax = 1, linecolor='black', linewidths=.1, center = 1)
 
