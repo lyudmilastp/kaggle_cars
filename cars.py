@@ -56,8 +56,9 @@ df[categorical] = df[categorical].astype('category')
 
 
 cor_mat = df.corr()
+plt.subplots()
 sns.heatmap(cor_mat, vmin=-1, vmax = 1, linecolor='black', linewidths=.1, center = 1)
-
+plt.subplots()
 sns.histplot(df['Price'], color = 'black')
 
 
