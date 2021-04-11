@@ -6,98 +6,112 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sklearn.metrics as sm
 from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+
 
 #: 1. Dataset manipulations
 # Creating dictionary for all columns names in the dataset
-columns = {'Model': 'model',
-           'Year': 'year',
-           'Price': 'price',
-           'Transmission': 'transmission',
-           'Mileage': ['mileage', 'mileage2'],
-           'Fuel type': ['fuel type', 'fuelType', 'fuel type 2'],
-           'Tax': ['tax', 'tax(£)'],
-           'Engine size': ['engine size', 'engine size2', 'engineSize']}
+columns = {'model': 'model',
+           'year': 'year',
+           'price': 'price',
+           'transmission': 'transmission',
+           'mileage': ['mileage', 'mileage2'],
+           'fuel_type': ['fuel type', 'fuelType', 'fuel type 2'],
+           'tax': ['tax', 'tax(£)'],
+           'engine_size': ['engine size', 'engine size2', 'engineSize']}
 
 # Combining all files into DataFrame
 path = 'Datasets/uk_used_cars'
 df = pd.DataFrame()
 for file in os.listdir(path):
-    if file.find('unclean')!=-1:
+    if file.find('unclean') != -1:
         pass
     else:
         temp = pd.read_csv(os.path.join(path, file), names=columns, header=None, index_col=False, skiprows=1)
-        temp['Brand'] = file.split(".")[0]
+        temp['brand'] = file.split(".")[0]
         df = df.append(temp)
 
 # Checking for null values in the Dataframe
 plt.subplots()
 msno.matrix(df, figsize=(10, 10))
+plt.title('Матрица пустых значений')
 plt.subplots()
 msno.bar(df, figsize=(12, 8))
+plt.title('Пустые значения по столбцам')
 
 # Drop null values
-df.dropna(subset=['Mileage', 'Year'], inplace=True)
+df.dropna(subset=['mileage', 'year'], inplace=True)
+df = df.loc[df['year'] < 2019]
 
 # Set categorical type, plotting with categorical data
-categorical = ['Transmission', 'Fuel type', 'Brand']
+categorical = ['transmission', 'fuel_type', 'brand']
 df[categorical] = df[categorical].astype('category')
 
 # v_1 with matplotlib
-by_fuel_type = df.groupby('Fuel type').agg({'Fuel type':'count'}).rename(columns={'Fuel type':'values'}).reset_index().sort_values(by='values', ascending=False)
+by_fuel_type = df.groupby('fuel_type').agg({'fuel_type': 'count'}).rename(
+    columns={'fuel_type': 'values'}).reset_index().sort_values(by='values', ascending=False)
 plt.subplots()
-plt.bar(by_fuel_type['Fuel type'], by_fuel_type['values'])
+plt.bar(by_fuel_type['fuel_type'], by_fuel_type['values'])
+plt.title('Количество машин по типу двигателя')
 
 # v_2 with seaborn
 plt.subplots()
-sns.countplot(x='Brand',
+sns.countplot(x='brand',
               data=df,
-              order=df['Brand'].value_counts().index,
+              order=df['brand'].value_counts().index,
               palette='mako')
+plt.title('Количество машин по брендам')
 
 # Add column with period of use
-df['Years of use'] = 2018 - df['Year']
-conditions = [df['Years of use']<3, df['Years of use']<6, df['Years of use']<10, df['Years of use']>=10]
+df['years_of_use'] = 2018 - df['year']
+conditions = [df['years_of_use'] < 3, df['years_of_use'] < 6, df['years_of_use'] < 10, df['years_of_use'] >= 10]
 outputs = ['less than 3', 'from 3 to 6', 'from 6 to 10', 'more than 10']
-df['Period of use'] = np.select(conditions, outputs)
+df['period_of_use'] = np.select(conditions, outputs)
+df['period_of_use'] = df['period_of_use'].astype('category')
 
 # Pivot table
-aver_price = df.pivot_table(index='Brand',
-               columns='Period of use',
-               values='Price',
-               fill_value=0,)
+average_price = df.pivot_table(index='brand',
+                            columns='period_of_use',
+                            values='price',
+                            fill_value=0, )
 
 # Distribution of prices by brands
-grouped = df.groupby(['Period of use', 'Brand'])['Price'].mean().reset_index()
+grouped = df.groupby(['period_of_use', 'brand'])['price'].mean().reset_index()
 
 plt.subplots()
-sns.boxplot(x='Brand', y='Price', data=grouped)
+sns.boxplot(x='brand', y='price', data=grouped)
 plt.title('Average price by brands')
-
 
 # TODO: изменения цен с каждым годом пробега
 # TODO: почему выводится пустой график
 
-#: 2. Linear regression
+#: 2. Linear regression on BMW
 # корреляционная матрица
-cor_mat = df.corr()
+bmw = df[df['brand']=='bmw']
+cor_mat = bmw.corr()
 plt.subplots()
-sns.heatmap(cor_mat, vmin=-1, vmax = 1, cmap='coolwarm', annot=True)
+sns.heatmap(cor_mat, vmin=-1, vmax=1, cmap='coolwarm', annot=True)
+plt.title('Корреляционная матрица')
 
 # гистрограмма по цене
 plt.subplots()
-sns.histplot(df['Price'], color = 'black')
+sns.histplot(bmw['price'], color='black')
+plt.title('Гистограмма распределения цен')
 
 # Train/test split
-num_training = int(0.8 * df['Price'].count())
-num_test = df['Price'].count() - num_training
+# TODO: используй функцию sklearn.train_test_split из sklearn
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+num_training = int(0.8 * bmw['price'].count())
+num_test = bmw['price'].count() - num_training
 
 # Training data
-X_train = np.array(df['Year'][:num_training]).reshape((num_training,1))
-y_train = np.array(df['Price'][:num_training])
+X_train = np.array(bmw['mileage'][:num_training]).reshape((num_training, 1))
+y_train = np.array(bmw['price'][:num_training])
 
 # Test data
-X_test = np.array(df['Year'][num_training:]).reshape((num_test,1))
-y_test = np.array(df['Price'][num_training:])
+X_test = np.array(bmw['year'][num_training:]).reshape((num_test, 1))
+y_test = np.array(bmw['price'][num_training:])
 
 # Create linear regression object
 linear_regressor = linear_model.LinearRegression()
@@ -107,11 +121,10 @@ linear_regressor.fit(X_train, y_train)
 y_test_pred = linear_regressor.predict(X_test)
 
 plt.subplots()
-plt.scatter(X_test, y_test, color='red', marker = '.', linewidths=1)
+plt.scatter(X_test, y_test, color='red', marker='.', linewidths=1)
 plt.plot(X_test, y_test_pred, color='black', linewidth=1)
 plt.xticks(())
 plt.yticks(())
-plt.show()
 
 print("Mean absolute error =", round(sm.mean_absolute_error(y_test, y_test_pred), 2))
 print("Explain variance score =", round(sm.explained_variance_score(y_test, y_test_pred), 2))
