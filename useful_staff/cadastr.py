@@ -11,7 +11,6 @@ cad_nums_rent = ["70:13:0101002:97","70:17:0000021:4","70:00:0000000:98", "70:17
 areas = [Area(num) for num in cad_nums]
 df = pd.DataFrame([area.get_attrs() for area in areas if area.get_coord() !=[]])
 df['geometry'] = [area.get_coord() for area in areas if  area.get_coord() != []]
-df['rights'] = np.where('property')
 
 features_list = []
 
@@ -36,11 +35,11 @@ for x,y in df['geometry'].iteritems():
                     'coordinates': i},
                     'properties':
                     {"description": df['cn'].loc[x],
-                    "fill": "#00f9ff",
-                    "fill-opacity": 0.9,
-                    "stroke": "#000000",
+                    "fill": "#22016e",
+                    "fill-opacity": 0.4,
+                    "stroke": "#ffffff",
                     "stroke-width": "1",
-                    "stroke-opacity": 0.5}}
+                    "stroke-opacity": 1}}
             features_list.append(feature)
     if len(y) == 1:
         for i in y:
@@ -52,11 +51,11 @@ for x,y in df['geometry'].iteritems():
                     'coordinates': i},
                     'properties':
                     {"description": df['cn'].loc[x],
-                    "fill": "#030056",
-                    "fill-opacity": 0.9,
-                    "stroke": "#000000",
+                    "fill": "#22016e",
+                    "fill-opacity": 1,
+                    "stroke": "#ffffff",
                     "stroke-width": "1",
-                    "stroke-opacity": 0.5}}
+                    "stroke-opacity": 1}}
             features_list.append(feature)
 
 
